@@ -565,11 +565,6 @@ void ResetHandler(void)
 	__enable_irq();
 
 	_init_Teensyduino_internal_();
-	if (RTC_SR & RTC_SR_TIF) {
-		// TODO: this should probably set the time more agressively, if
-		// we could reliably detect the first reboot after programming.
-		rtc_set(TIME_T);
-	}
 
 	__libc_init_array();
 
