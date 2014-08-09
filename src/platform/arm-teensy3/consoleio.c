@@ -1,15 +1,11 @@
-// #define VCOM
-// Character I/O stubs
-
-#include "stm32l1xx_conf.h"
-
-USART_TypeDef *consoleUart;
+#include "kinetis.h"
+#include "core_pins.h"
 
 void tx(char c)
 {
-  while(!USART_GetFlagStatus(consoleUart, USART_FLAG_TXE))
+  while(!(UART0_S1 & UART_S1_TDRE)) // pause until transmit data register empty
     ;
-  USART_SendData(consoleUart, (uint16_t)c);
+  UART0_D = c;
 }
 
 int putchar(int c)
@@ -20,64 +16,51 @@ int putchar(int c)
 }
 
 int kbhit() {
-  return USART_GetFlagStatus(consoleUart, USART_FLAG_RXNE);
+  return UART0_S1 & UART_S1_RDRF;
 }
 
 int getkey()
 {
   int c;
-  while (!kbhit())
+  while (!kbhit()) // pause until receive data register full
     ;
-  return USART_ReceiveData(consoleUart);
+  c = UART0_D;
+  return c;
 }
 
 void init_io()
 {
-  consoleUart = USART1;
-        
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);    // PA9 and PA10
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource9,  GPIO_AF_USART1);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
+  // turn on clock
+  SIM_SCGC4 |= SIM_SCGC4_UART0;
 
-  GPIO_InitTypeDef gpioInit = {
-    .GPIO_Mode  = GPIO_Mode_AF,
-    .GPIO_PuPd  = GPIO_PuPd_NOPULL,
-    .GPIO_OType = GPIO_OType_PP,
-    .GPIO_Speed = GPIO_Speed_400KHz
-  };
+  // configure receive pin
+  // pfe - passive input filter
+  // ps - pull select, enable pullup, p229
+  // pe - pull enable, on, p229
 
-  gpioInit.GPIO_Pin = GPIO_Pin_9;
-  GPIO_Init(GPIOA, &gpioInit);
+  CORE_PIN0_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3);
+  // configure transmit pin
+  // dse - drive strength enable, high, p228
+  // sre - slew rate enable, slow, p229
+  CORE_PIN1_CONFIG = PORT_PCR_DSE | PORT_PCR_SRE | PORT_PCR_MUX(3);
 
-  gpioInit.GPIO_Pin = GPIO_Pin_10;
-  GPIO_Init(GPIOA, &gpioInit);
+  // TESTME, *RM.pdf, table 47-57, page 1275, 38400 baud?
+  UART0_BDH = 0;
+  UART0_BDL = 17;
 
-  USART_InitTypeDef uartInit = {
-    .USART_BaudRate   = 115200,
-    .USART_WordLength = USART_WordLength_8b,
-    .USART_StopBits   = USART_StopBits_1,
-    .USART_Parity     = USART_Parity_No,
-    .USART_Mode       = USART_Mode_Rx | USART_Mode_Tx,
-    .USART_HardwareFlowControl = USART_HardwareFlowControl_None
-  };
-
-  USART_Init(consoleUart, &uartInit);
-
-  USART_Cmd(consoleUart, ENABLE);
-
-  init_systick();
+  // transmitter enable, receiver enable
+  UART0_C2 = 0xa;
 }
 
 void wfi(void)
 {
-  __WFI();
+  asm("wfi"); // __WFI();
 }
 
-extern int ms_tick;
+volatile uint32_t systick_millis_count = 0;
 int get_msecs(void)
 {
-  return ms_tick;
+  return systick_millis_count;
 }
 
 int spins(int i)
