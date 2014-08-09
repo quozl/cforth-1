@@ -54,17 +54,13 @@ app.elf: $(PLAT_OBJS) $(FORTH_OBJS)
 	   $(LIBDIRS) -lgcc
 
 
-# This rule extracts the executable bits from an ELF file, yielding raw binary.
+# This rule extracts the executable bits from an ELF file, yielding a hex file
 
-%.img: %.elf
-	@$(TOBJCOPY) -O binary $< $@
-	date  "+%F %H:%M" >>$@
+%.hex: %.elf
+	$(CROSS)size $<
+	$(TOBJCOPY) -O ihex -R .eeprom $< $@
 	@ls -l $@
 
-# Override the default .dump rule (FIXME: no reason now?)
-
-%.dump: %.elf
-	@$(TOBJDUMP) --disassemble $< >$@
 
 # This rule builds a date stamp object that you can include in the image
 # if you wish.
