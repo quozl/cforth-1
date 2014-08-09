@@ -44,9 +44,11 @@ void init_io()
   // sre - slew rate enable, slow, p229
   CORE_PIN1_CONFIG = PORT_PCR_DSE | PORT_PCR_SRE | PORT_PCR_MUX(3);
 
-  // TESTME, *RM.pdf, table 47-57, page 1275, 38400 baud?
+  // baud rate generator, 115200, derived from test build
+  // reference, *RM.pdf, table 47-57, page 1275, 38400 baud?
   UART0_BDH = 0;
-  UART0_BDL = 17;
+  UART0_BDL = 0x1a;
+  UART0_C4 = 0x1;
 
   // transmitter enable, receiver enable
   UART0_C2 = 0xa;
