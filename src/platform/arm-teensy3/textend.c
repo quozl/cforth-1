@@ -6,17 +6,11 @@
 
 // Prototypes
 
-cell i2c_start();
-cell i2c_wait();
-cell i2c_init();
 cell get_msecs();
 cell wfi();
 cell spins();
 
 cell ((* const ccalls[])()) = {
-    (cell (*)())i2c_start,    // Entry # 0
-    (cell (*)())i2c_wait,     // Entry # 1
-    (cell (*)())i2c_init,     // Entry # 2
     (cell (*)())spins,        // Entry # 3
     (cell (*)())wfi,          // Entry # 4
     (cell (*)())get_msecs,    // Entry # 5
