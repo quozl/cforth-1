@@ -563,8 +563,6 @@ void ResetHandler(void)
 	//init_pins();
 	__enable_irq();
 
-	__libc_init_array();
-
 	startup_late_hook();
 	main();
 	while (1) ;
