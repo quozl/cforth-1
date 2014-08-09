@@ -2,102 +2,98 @@
 
 fl ../../lib/misc.fth
 fl ../../lib/dl.fth
-fl ../../lib/random.fth
-fl ../../lib/ilog2.fth
-fl ../../lib/tek.fth
 
-1 [if]
-fl gpio.fth
-fl adcpins.fth
+0 ccall: i2c-start   { i.wr i.slave i.alen a.abuf i.dlen a.dbuf -- }
+1 ccall: i2c-wait    { -- i.status }
+2 ccall: i2c-init    { -- }
+3 ccall: spins       { i.nspins -- }
+4 ccall: wfi         { -- }
+5 ccall: get-msecs   { -- n }
 
-2 constant water-gpio
-3 constant spritz-gpio
-4 constant recirc-gpio
-5 constant nutrient-gpio
-6 constant pH-up-gpio
-7 constant pH-down-gpio
-6 constant #gpios
+: +apb1 $40000000 +  ;
+: +apb2 $40010000 +  ;
+: +ahb  $40020000 +  ;
+: +gpioa +ahb  ;
+: +gpiob +ahb $400 + ;
+: +gpioc +ahb $800 + ;
+: +gpiod +ahb $c00 + ;
+: +rcc   +ahb $3800 +  ;
+: +i2c1  +apb1 $5400 +  ;
 
-[ifdef] float
-\ Test for analogWrite to DAC0
-decimal
-3.1415926535E0 fconstant pi
-pi 2E f* fconstant 2pi
-2E-2 fvalue phaseinc
+\ RCC offsets
+$1c constant ahbenr
+$20 constant apb2enr
+$24 constant apb1enr
 
-: sinewave  ( -- )
-   ." Sine wave on DAC0 pin; type a key to stop" cr
-   #12 analogWriteRes
-   2pi
-   begin        ( phase )
-      fdup fsin 2000E0 f*  2050E0 f+
-      int pinA14 analogWrite 
-      phaseinc f-  fdup f0<  if  2pi f+  then
-   key? until
-   fdrop
+\ GPIO register offsets
+$00 constant moder
+$04 constant otyper
+$0c constant pupdr
+$10 constant idr
+$14 constant odr
+$18 constant bsrr
+$20 constant afr0
+$24 constant afr1
+$28 constant brr
+
+: clk-fast  ( -- )  ;
+: clk-slow  ( -- )  ;
+
+: bitset  ( mask adr -- )  tuck l@ or swap l!  ;
+: bitclr  ( mask adr -- )  tuck l@ swap invert and swap l!  ;
+: gpiob-clk-on  ( -- )  2  ahbenr +rcc bitset  ;
+: i2c-clk-on    ( -- )  $200000  ahbenr +rcc bitset  ;  \ I2C1
+: usart2-clk-on ( -- )  $020000  ahbenr +rcc bitset  ;
+: usart3-clk-on ( -- )  $040000  ahbenr +rcc bitset  ;
+
+: gpioa-set-mode  ( mode pin# -- )  2*  lshift  moder +gpioa  bitset  ;
+: gpioa-is-input  ( pin# -- )  0 swap gpioa-set-mode  ;
+: gpioa-is-output ( pin# -- )  1 swap gpioa-set-mode  ;
+: gpioa-is-af     ( pin# -- )  2 swap gpioa-set-mode  ;
+: gpioa-is-analog ( pin# -- )  3 swap gpioa-set-mode  ;
+
+: gpioa-open-drain  ( pin# -- )  1 swap lshift  otyper +gpioa  bitset  ;
+: gpioa-push-pull   ( pin# -- )  1 swap lshift  otyper +gpioa  bitclr  ;
+
+: gpiob-set-mode  ( mode pin# -- )  2*  lshift  moder +gpiob  bitset  ;
+: gpiob-is-input  ( pin# -- )  0 swap gpiob-set-mode  ;
+: gpiob-is-output ( pin# -- )  1 swap gpiob-set-mode  ;
+: gpiob-is-af     ( pin# -- )  2 swap gpiob-set-mode  ;
+: gpiob-is-analog ( pin# -- )  3 swap gpiob-set-mode  ;
+
+: gpiob-open-drain  ( pin# -- )  1 swap lshift  otyper +gpiob  bitset  ;
+: gpiob-push-pull   ( pin# -- )  1 swap lshift  otyper +gpiob  bitclr  ;
+
+: gpiob-set  ( pin# -- )  1 swap lshift  odr +gpiob  bitset  ;
+: gpiob-clr  ( pin# -- )  1 swap lshift  odr +gpiob  bitclr  ;
+
+: gpioa-set  ( pin# -- )  1 swap lshift  odr +gpioa  bitset  ;
+: gpioa-clr  ( pin# -- )  1 swap lshift  odr +gpioa  bitclr  ;
+
+: pin-sda      gpiob-clk-on 9 gpiob-open-drain  9 gpiob-clr  9 gpiob-is-output  ;
+: release-sda  9 gpiob-set  ;
+: reset-bcm    #12 gpioa-clr  #12 gpioa-is-output  ;
+: release-bcm  #12 gpioa-set  ;
+: ms  0 ?do  #1000 0 do loop  loop  ;
+: idle-bcm     reset-bcm  pin-sda  release-bcm  d# 50 ms  release-sda  ;
+
+: release-scl  gpiob-clk-on 8 gpiob-open-drain  8 gpiob-set  8 gpiob-is-output  ;
+
+\ Mimics the tether version
+: i2c-op  ( dbuf dlen abuf alen slave op -- result )
+   swap 2swap swap   ( dbuf dlen  op slave  alen abuf )
+   2>r  2swap swap   ( op slave  dlen dbuf  r: alen abuf )
+   2r>  2swap        ( op slave  alen abuf  dlen dbuf  )
+   i2c-start  i2c-wait
 ;
-[then]
-
-: init-i2c  ( -- )  #10 9 i2c-setup  ;
-
-\ I2C devices
-fl ina219.fth
-fl mcp23008.fth
-fl mcp23017.fth
-fl fixture.fth
-fl ../bluez/colors.fth
-fl ../bluez/rgblcd.fth
-fl ../esp8266/pca9685.fth
-fl ../esp8266/ms5803.fth
-fl ../esp8266/bme280.fth
-fl ../esp8266/vl6180x.fth
-fl ../esp8266/ads1115.fth \ Possibly unnecessary since Teensy3 has good ADCs
-fl sht21.fth
-
-fl ../esp8266/ds18x20.fth  \ Onewire temperature probe
-#23 to ds18x20-pin  \ Needs 4.7K pullup
-
-: pump-setup  ( -- )
-   water-gpio #gpios  bounds  do  0 i gpio-pin!  i gpio-is-output  loop
-;
-
-fl ph.fth    \ pH probe via ADC
-fl pump.fth  \ Pump controller via GPIOs and motor driver
-fl ../../cforth/printf.fth
-fl esp8266_at.fth \ esp8266 HTTP server
-fl ec.fth \ electrical conductivity sensor
-fl pump-ctl.fth \ pump control state machine
-
-: init-all
-   pump-setup
-   init-i2c
-   init-vl6180x
-   init-pump-ctl
-   init-bme
-   start-server
-;
-
-: main-loop
-   1
-   begin
-     handle-request
-     \ blah
-     1- dup 0= if
-       drop #500
-       pump-ctl
-       .pump-ctl
-     then
-     #1 ms
-     key?
-   until
-   drop
-   init-pump-ctl \ resets pumps
-;
+: ?result  ( result -- )  0< abort" I2C Error"  ;
+: i2c-read  ( adr len slave -- )  0 0 rot 0 i2c-op  ?result  ;
+: i2c-write  ( adr len slave -- )  0 0 rot 1 i2c-op  ?result  ;
 
 \ Replace 'quit' to make CForth auto-run some application code
 \ instead of just going interactive.
-: app  ." CForth" cr decimal  pump-setup  init-i2c quit  ;
-[else]
-: app ." CForth" cr decimal  quit  ;
-[then]
+: app  ." CForth" cr hex quit  ;
+
+\ " ../objs/tester" $chdir drop
+
 " app.dic" save
