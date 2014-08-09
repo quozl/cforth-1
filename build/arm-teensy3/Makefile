@@ -1,7 +1,7 @@
-# Builds CForth for LPC2148 ARM SoC
+# Builds CForth for Teensy 3
 
 TOPDIR=../..
 
-include $(TOPDIR)/src/app/arm-stm32l1xx-discovery/targets.mk
+include $(TOPDIR)/src/app/arm-teensy3/targets.mk
 
 default: app.elf app.bin app.nm app.dump

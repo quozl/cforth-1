@@ -4,22 +4,18 @@ SRC=$(TOPDIR)/src
 
 # Target compiler definitions
 CROSS ?= arm-none-eabi-
-CPU_VARIANT=-mthumb -mcpu=cortex-m3
+CPU_VARIANT=-mthumb -mcpu=cortex-m4
 include $(SRC)/cpu/arm/compiler.mk
 
 include $(SRC)/common.mk
 include $(SRC)/cforth/targets.mk
 
-# Defining USE_STDPERIPH_DRIVER causes the CMSIS driver include files to
-# include stm32l1xx_conf.h
-DEFS += -DUSE_STDPERIPH_DRIVER
+DEFS += -DF_CPU=48000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -D__MK20DX256__ -DARDUINO=105 -DTEENSYDUINO=118
 
 DICTIONARY=ROM
 DICTSIZE=0x2000
 
 include $(SRC)/cforth/embed/targets.mk
-
-STMLIB ?= /usr/local/stm32l1xx_periph-lib
 
 CFLAGS += -m32 -march=i386
 
@@ -27,42 +23,20 @@ TCFLAGS += -Os
 
 # Omit unreachable functions from output
 
-TCFLAGS += -ffunction-sections -fdata-sections
-TLFLAGS += --gc-sections
+TCFLAGS += -ffunction-sections -fdata-sections $(DEFS)
+TLFLAGS += --gc-sections -Map main.map
 
 # VPATH += $(SRC)/cpu/arm
 VPATH += $(SRC)/lib
-VPATH += $(SRC)/platform/arm-stm32l1xx-discovery
-VPATH += $(STMLIB)/Libraries/STM32L1xx_StdPeriph_Driver/src
+VPATH += $(SRC)/platform/arm-teensy3
 
 # This directory, including board information
-INCS += -I$(SRC)/platform/arm-stm32l1xx-discovery
-
-# Include files for CPU cores
-INCS += -I$(STMLIB)/Libraries/CMSIS/Include
-
-# Contains stm32l1xx.h defining the hardware registers
-INCS += -I$(STMLIB)/Libraries/CMSIS/Device/ST/STM32L1xx/Include
-
-# Include files defining standard peripheral driver APIs for various devices
-INCS += -I$(STMLIB)/Libraries/STM32L1xx_StdPeriph_Driver/inc
+INCS += -I$(SRC)/platform/arm-teensy3
 
 
 # Platform-specific object files for low-level startup and platform I/O
 
-# CLKCONFIG = -1v8-msi2000
-CLKCONFIG ?= -1v8-hsi16m-16m
-
-FIRST_OBJ = tstartup_stm32l1xx_mdp.o
-
-PLAT_OBJS += tsystem_stm32l1xx$(CLKCONFIG).o
-PLAT_OBJS += tstm32l1xx_usart.o tstm32l1xx_rcc.o tstm32l1xx_gpio.o
-PLAT_OBJS += tstm32l1xx_i2c.o tmisc.o tsystick.o
-PLAT_OBJS += ttmain.o tconsoleio.o
-
-EXTEND_OBJS ?= ti2c.o
-
-PLAT_OBJS += $(EXTEND_OBJS)
+PLAT_OBJS += tmk20dx128.o ttmain.o tconsoleio.o
 
 # Object files for the Forth system and application-specific extensions
 
@@ -71,12 +45,12 @@ FORTH_OBJS = tembed.o textend.o
 
 # Recipe for linking the final image
 
-LDSCRIPT = $(SRC)/platform/arm-stm32l1xx-discovery/stm32_flash.ld
+LDSCRIPT = $(SRC)/platform/arm-teensy3/mk20dx256.ld
 
-app.elf: $(FIRST_OBJ) $(PLAT_OBJS) $(FORTH_OBJS)
+app.elf: $(PLAT_OBJS) $(FORTH_OBJS)
 	@echo Linking $@ ... 
 	$(TLD) -o $@  $(TLFLAGS) -T$(LDSCRIPT) \
-	   $(FIRST_OBJ) $(PLAT_OBJS) $(FORTH_OBJS) \
+	   $(PLAT_OBJS) $(FORTH_OBJS) \
 	   $(LIBDIRS) -lgcc
 
 
@@ -87,11 +61,10 @@ app.elf: $(FIRST_OBJ) $(PLAT_OBJS) $(FORTH_OBJS)
 	date  "+%F %H:%M" >>$@
 	@ls -l $@
 
-# Override the default .dump rule to include the interrupt vector table
+# Override the default .dump rule (FIXME: no reason now?)
 
 %.dump: %.elf
-	@$(TOBJDUMP) -s -j .isr_vector $< >$@
-	@$(TOBJDUMP) --disassemble $< >>$@
+	@$(TOBJDUMP) --disassemble $< >$@
 
 # This rule builds a date stamp object that you can include in the image
 # if you wish.

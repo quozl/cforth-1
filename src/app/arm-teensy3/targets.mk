@@ -1,5 +1,5 @@
 # APPPATH is the path to the application code, i.e. this directory
-APPPATH=$(TOPDIR)/src/app/arm-stm32l1xx-discovery
+APPPATH=$(TOPDIR)/src/app/arm-teensy3
 
 # APPLOADFILE is the top-level "Forth load file" for the application code.
 APPLOADFILE = app.fth
@@ -8,4 +8,4 @@ APPLOADFILE = app.fth
 # i.e. the list of files that APPLOADFILE floads.  It's for dependency checking.
 APPSRCS = $(wildcard $(APPPATH)/*.fth)
 
-include $(TOPDIR)/src/platform/arm-stm32l1xx-discovery/targets.mk
+include $(TOPDIR)/src/platform/arm-teensy3/targets.mk
