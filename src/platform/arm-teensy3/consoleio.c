@@ -15,6 +15,31 @@ int putchar(int c)
     tx(c);
 }
 
+#if 0
+// early debug
+const char hexen[] = "0123456789ABCDEF";
+
+void put8(uint32_t c)
+{
+  putchar(hexen[(c >> 4) & 0xf]);
+  putchar(hexen[c & 0xf]);
+}
+
+void put32(uint32_t n)
+{
+  put8(n >> 24);
+  put8(n >> 16);
+  put8(n >> 8);
+  put8(n);
+}
+
+void putline(char *str)
+{
+  while (*str)
+    putchar((int)*str++);
+}
+#endif
+
 int kbhit() {
   return UART0_S1 & UART_S1_RDRF;
 }
