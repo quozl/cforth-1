@@ -41,7 +41,7 @@ void putline(char *str)
 #endif
 
 int kbhit() {
-  return UART0_S1 & UART_S1_RDRF;
+  return UART0_RCFIFO > 0;
 }
 
 int getkey()
@@ -62,8 +62,8 @@ void init_io()
   // pfe - passive input filter
   // ps - pull select, enable pullup, p229
   // pe - pull enable, on, p229
-
   CORE_PIN0_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3);
+
   // configure transmit pin
   // dse - drive strength enable, high, p228
   // sre - slew rate enable, slow, p229
@@ -75,8 +75,11 @@ void init_io()
   UART0_BDL = 0x1a;
   UART0_C4 = 0x1;
 
+  // fifo enable
+  UART0_PFIFO = UART_PFIFO_TXFE | UART_PFIFO_RXFE;
+
   // transmitter enable, receiver enable
-  UART0_C2 = 0xa;
+  UART0_C2 = UART_C2_TE | UART_C2_RE;
 }
 
 void wfi(void)
