@@ -1,18 +1,46 @@
 #include "kinetis.h"
 #include "core_pins.h"
+#include "usb_serial.h"
+
+
+char * ultoa(unsigned long val, char *buf, int radix)
+{
+  unsigned digit;
+  int i=0, j;
+  char t;
+
+  while (1) {
+    digit = val % radix;
+    buf[i] = ((digit < 10) ? '0' + digit : 'A' + digit - 10);
+    val /= radix;
+    if (val == 0) break;
+    i++;
+  }
+  buf[i + 1] = 0;
+  for (j=0; j < i; j++, i--) {
+    t = buf[j];
+    buf[j] = buf[i];
+    buf[i] = t;
+  }
+  return buf;
+}
+
+int buffered;
 
 void tx(char c)
 {
   while(!(UART0_S1 & UART_S1_TDRE)) // pause until transmit data register empty
     ;
   UART0_D = c;
+  usb_serial_putchar(c);
+  buffered++;
 }
 
 int putchar(int c)
 {
-    if (c == '\n')
-        tx('\r');
-    tx(c);
+  if (c == '\n')
+    tx('\r');
+  tx(c);
 }
 
 #if 0
@@ -40,17 +68,28 @@ void putline(char *str)
 }
 #endif
 
-int kbhit() {
-  return UART0_RCFIFO > 0;
+int kbhit()
+{
+  if (UART0_RCFIFO > 0) return 1;
+  if (usb_serial_peekchar() != -1) return 1;
+  return 0;
 }
 
 int getkey()
 {
   int c;
-  while (!kbhit()) // pause until receive data register full
-    ;
-  c = UART0_D;
-  return c;
+  if (buffered) {
+    usb_serial_flush_output();
+    buffered = 0;
+  }
+  while (1) {
+    if (UART0_RCFIFO > 0) {
+      c = UART0_D;
+      return c;
+    }
+    c = usb_serial_getchar();
+    if (c != -1) return c;
+  }
 }
 
 void init_io()
@@ -80,9 +119,17 @@ void init_io()
 
   // transmitter enable, receiver enable
   UART0_C2 = UART_C2_TE | UART_C2_RE;
+
+  buffered = 0;
+  usb_init();
 }
 
 void wfi(void)
+{
+  asm("wfi"); // __WFI();
+}
+
+void yield(void)
 {
   asm("wfi"); // __WFI();
 }
