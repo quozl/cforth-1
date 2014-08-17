@@ -42,9 +42,9 @@ h# 400f.f000 constant gpio-base
 
 \ convert port and pin to mask and gpio register
 : port.pin>mask.gpio  ( port# pin# -- mask gpio )
-   1 swap shift		( port# mask )
-   swap			( mask port# )
-   h# 40 * gpio-base +	( mask gpio )
+   1 swap shift         ( port# mask )
+   swap                 ( mask port# )
+   h# 40 * gpio-base +  ( mask gpio )
 ;
 
 \ gpio access
