@@ -7,6 +7,11 @@ fl ../../lib/dl.fth
 1 ccall: wfi         { -- }
 2 ccall: get-msecs   { -- n }
 
+fl ../../platform/arm-teensy3/watchdog.fth
+fl ../../platform/arm-teensy3/timer.fth
+fl ../../platform/arm-teensy3/pcr.fth
+fl ../../platform/arm-teensy3/gpio.fth
+
 \ Replace 'quit' to make CForth auto-run some application code
 \ instead of just going interactive.
 : app  ." CForth" cr hex quit  ;
