@@ -562,6 +562,12 @@ void ResetHandler(void)
 
 	//init_pins();
 	__enable_irq();
+	if (RTC_SR & RTC_SR_TIF) {
+		RTC_SR = 0;
+		RTC_TPR = 0;
+		RTC_TSR = TIME_T;
+		RTC_SR = RTC_SR_TCE;
+	}
 
 	startup_late_hook();
 	main();
