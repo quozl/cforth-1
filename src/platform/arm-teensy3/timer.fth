@@ -5,3 +5,7 @@
    until
    drop
 ;
+
+0 value timestamp
+: t(  get-msecs to timestamp  ;
+: )t  get-msecs timestamp - .d ." ms"  ;
