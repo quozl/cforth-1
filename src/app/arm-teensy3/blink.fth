@@ -17,3 +17,14 @@
       key?
    until
 ;
+
+: d12-gpio##  port-d# 7  ;
+: d12-init  0 +af1 +dse d12-gpio## pcr! d12-gpio## gpio-dir-out  ;
+
+: d12-blink
+   d12-init
+   begin
+      d12-gpio## gpio-set d# 10 ms  d12-gpio## gpio-clr d# 90 ms
+      key?
+   until
+;
