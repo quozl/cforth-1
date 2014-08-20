@@ -6,6 +6,7 @@ fl ../../lib/dl.fth
 0 ccall: spins       { i.nspins -- }
 1 ccall: wfi         { -- }
 2 ccall: get-msecs   { -- n }
+3 ccall: a@          { i.pin -- n }
 
 fl ../../platform/arm-teensy3/watchdog.fth
 fl ../../platform/arm-teensy3/timer.fth

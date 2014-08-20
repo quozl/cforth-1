@@ -9,11 +9,13 @@
 cell get_msecs();
 cell wfi();
 cell spins();
+cell analogRead();
 
 cell ((* const ccalls[])()) = {
-    (cell (*)())spins,        // Entry # 3
-    (cell (*)())wfi,          // Entry # 4
-    (cell (*)())get_msecs,    // Entry # 5
+    (cell (*)())spins,        // Entry # 1
+    (cell (*)())wfi,          // Entry # 2
+    (cell (*)())get_msecs,    // Entry # 3
+    (cell (*)())analogRead,   // Entry # 4
 };
 
 // Forth words to call the above routines may be created by:

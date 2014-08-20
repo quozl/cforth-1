@@ -122,6 +122,7 @@ void init_io()
 
   buffered = 0;
   usb_init();
+  analog_init();
 }
 
 void wfi(void)
