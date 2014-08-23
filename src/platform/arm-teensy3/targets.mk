@@ -36,7 +36,7 @@ INCS += -I$(SRC)/platform/arm-teensy3
 
 # Platform-specific object files for low-level startup and platform I/O
 
-PLAT_OBJS += tmk20dx128.o ttmain.o tconsoleio.o tusb_dev.o tusb_mem.o tusb_desc.o tusb_serial.o tanalog.o tpins_teensy.o
+PLAT_OBJS += tmk20dx128.o ttmain.o tconsoleio.o tusb_dev.o tusb_mem.o tusb_desc.o tusb_serial.o tanalog.o tpins_teensy.o teeprom.o
 
 # Object files for the Forth system and application-specific extensions
 
