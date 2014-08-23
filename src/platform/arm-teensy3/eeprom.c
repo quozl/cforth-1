@@ -30,6 +30,7 @@
 
 #include "kinetis.h"
 #include <stdint.h>
+#include <string.h>
 //#include "HardwareSerial.h"
 
 // The EEPROM is really RAM with a hardware-based backup system to
@@ -41,6 +42,10 @@
 // compared to writing 8 bit bytes.
 //
 #define EEPROM_SIZE 2048
+
+uint32_t eeprom_size() {
+  return EEPROM_SIZE;
+}
 
 // Writing unaligned 16 or 32 bit data is handled automatically when
 // this is defined, but at a cost of extra code size.  Without this,
@@ -99,6 +104,22 @@ void eeprom_initialize(void)
 }
 
 #define FlexRAM ((uint8_t *)0x14000000)
+
+uint32_t eeprom_base()
+{
+	return 0x14000000;
+}
+
+uint32_t eeprom_length()
+{
+	uint32_t offset;
+	if (!(FTFL_FCNFG & FTFL_FCNFG_EEERDY)) eeprom_initialize();
+	if (FlexRAM[0] == 0xff) return 0; /* not initialised */
+	for(offset=0; offset<EEPROM_SIZE; offset++) {
+		if (FlexRAM[offset] == 0) break;
+	}
+	return offset;
+}
 
 uint8_t eeprom_read_byte(const uint8_t *addr)
 {

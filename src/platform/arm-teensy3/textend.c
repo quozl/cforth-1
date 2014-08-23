@@ -16,6 +16,11 @@ cell pinMode();
 cell micros();
 cell delay();
 cell _reboot_Teensyduino_();
+cell eeprom_size();
+cell eeprom_base();
+cell eeprom_length();
+cell eeprom_read_byte();
+cell eeprom_write_byte();
 
 cell ((* const ccalls[])()) = {
     (cell (*)())spins,        // Entry # 0
@@ -28,6 +33,11 @@ cell ((* const ccalls[])()) = {
     (cell (*)())micros,       // Entry # 7
     (cell (*)())delay,        // Entry # 8  // fixme: hangs
     (cell (*)())_reboot_Teensyduino_, // Entry # 9
+    (cell (*)())eeprom_size,
+    (cell (*)())eeprom_base,
+    (cell (*)())eeprom_length,
+    (cell (*)())eeprom_read_byte,
+    (cell (*)())eeprom_write_byte,
 };
 
 // Forth words to call the above routines may be created by:

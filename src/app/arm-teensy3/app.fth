@@ -13,6 +13,11 @@ fl ../../lib/dl.fth
 #7 ccall: get-usecs   { -- n }
 #8 ccall: delay       { n -- }
 #9 ccall: bye         { -- }
+#10 ccall: /eeprom       { -- n }
+#11 ccall: eeprom-base   { -- n }
+#12 ccall: eeprom-length { -- n }
+#13 ccall: eeprom@   { i.adr -- i.val }
+#14 ccall: eeprom!   { i.val i.adr -- }
 
 fl ../../platform/arm-teensy3/watchdog.fth
 fl ../../platform/arm-teensy3/timer.fth
