@@ -45,8 +45,33 @@ d# 14 value d14
    until
 ;
 
-\ Replace 'quit' to make CForth auto-run some application code
-\ instead of just going interactive.
-: app  lb ." CForth" cr hex quit  ;
+\ eeprom for source code
+: .d%  ( n -- )  push-decimal  (.) type [char] % emit  pop-base  ;
+: .usage  ( -- )  eeprom-length d# 100 * /eeprom / .d%  ;
+: eeprom-clear  ( -- )  0 0 eeprom!  ;
+: eeprom$  ( -- adr len )  eeprom-base eeprom-length  ;
+: .eeprom  ( -- )  eeprom$ type  ;
+: eeprom-dump  ( -- )  eeprom$ 1+ cdump  ;
+: eeprom-dump-all  ( -- )  eeprom-base /eeprom dump  ;
+: eeprom-evaluate  ( -- )
+   eeprom$  ['] evaluate  catch  ?dup  if  3drop  then
+;
+defer init  ' noop is init
+: ^  ( text ( )
+   eeprom-length        ( pos )
+   eol parse            ( pos adr len )
+   bounds do            ( pos )
+      i c@ over         ( pos char pos )
+      eeprom!           ( pos )
+      1+                ( pos+1 )
+   loop                 ( pos+len )
+   h# a over eeprom!    ( pos+len+1 )
+   1+ 0 swap eeprom!    ( )
+;
+
+: app
+   eeprom-evaluate  init
+   ." CForth" cr hex quit
+;
 
 " app.dic" save
