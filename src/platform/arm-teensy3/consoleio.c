@@ -25,15 +25,18 @@ char * ultoa(unsigned long val, char *buf, int radix)
   return buf;
 }
 
-int buffered;
+int seen_usb; /* data has been received from the USB host */
+int sent_usb; /* data has been sent to the USB layer that is not yet flushed */
 
 void tx(char c)
 {
   while(!(UART0_S1 & UART_S1_TDRE)) // pause until transmit data register empty
     ;
   UART0_D = c;
-  usb_serial_putchar(c);
-  buffered++;
+  if (seen_usb) {
+    usb_serial_putchar(c);
+    sent_usb++;
+  }
 }
 
 int putchar(int c)
@@ -78,9 +81,9 @@ int kbhit()
 int getkey()
 {
   int c;
-  if (buffered) {
+  if (sent_usb) {
     usb_serial_flush_output();
-    buffered = 0;
+    sent_usb = 0;
   }
   while (1) {
     if (UART0_RCFIFO > 0) {
@@ -88,7 +91,10 @@ int getkey()
       return c;
     }
     c = usb_serial_getchar();
-    if (c != -1) return c;
+    if (c != -1) {
+      seen_usb++;
+      return c;
+    }
   }
 }
 
@@ -120,7 +126,8 @@ void init_io()
   // transmitter enable, receiver enable
   UART0_C2 = UART_C2_TE | UART_C2_RE;
 
-  buffered = 0;
+  seen_usb = 0;
+  sent_usb = 0;
   usb_init();
   analog_init();
 }
