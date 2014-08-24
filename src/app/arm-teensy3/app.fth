@@ -24,9 +24,6 @@ fl ../../platform/arm-teensy3/timer.fth
 fl ../../platform/arm-teensy3/pcr.fth
 fl ../../platform/arm-teensy3/gpio.fth
 
-d# 13 value d13
-d# 14 value d14
-
 : be-in      0 swap m!  ;
 : be-out     1 swap m!  ;
 : be-pullup  2 swap m!  ;
@@ -34,13 +31,19 @@ d# 14 value d14
 : go-on      1 swap p!  ;
 : go-off     0 swap p!  ;
 
-: wait       d# 125 ms  ;
+: wait  ( ms -- )
+   get-msecs +
+   begin
+      dup get-msecs - 0<  key?  or
+   until
+   drop
+;
 
 : lb
-   d13 be-out  d14 be-out
+   d be-out  e be-out
    begin
-      d13 go-on  wait  d13 go-off
-      d14 go-on  wait  d14 go-off
+      d go-on  d# 125 wait  d go-off
+      e go-on  d# 125 wait  e go-off
       key?
    until
 ;
