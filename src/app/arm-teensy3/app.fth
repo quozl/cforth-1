@@ -13,11 +13,11 @@ fl ../../lib/dl.fth
 #7 ccall: get-usecs   { -- n }
 #8 ccall: delay       { n -- }
 #9 ccall: bye         { -- }
-#10 ccall: /eeprom       { -- n }
-#11 ccall: eeprom-base   { -- n }
-#12 ccall: eeprom-length { -- n }
-#13 ccall: eeprom@   { i.adr -- i.val }
-#14 ccall: eeprom!   { i.val i.adr -- }
+#10 ccall: /nv        { -- n }
+#11 ccall: nv-base    { -- n }
+#12 ccall: nv-length  { -- n }
+#13 ccall: nv@        { i.adr -- i.val }
+#14 ccall: nv!        { i.val i.adr -- }
 
 fl ../../platform/arm-teensy3/watchdog.fth
 fl ../../platform/arm-teensy3/timer.fth
@@ -45,32 +45,52 @@ d# 14 value d14
    until
 ;
 
-\ eeprom for source code
-: .d%  ( n -- )  push-decimal  (.) type [char] % emit  pop-base  ;
-: .usage  ( -- )  eeprom-length d# 100 * /eeprom / .d%  ;
-: eeprom-clear  ( -- )  0 0 eeprom!  ;
-: eeprom$  ( -- adr len )  eeprom-base eeprom-length  ;
-: .eeprom  ( -- )  eeprom$ type  ;
-: eeprom-dump  ( -- )  eeprom$ 1+ cdump  ;
-: eeprom-dump-all  ( -- )  eeprom-base /eeprom dump  ;
-: eeprom-evaluate  ( -- )
-   eeprom$  ['] evaluate  catch  ?dup  if  3drop  then
-;
-defer init  ' noop is init
-: ^  ( text ( )
-   eeprom-length        ( pos )
+\ a non-volatile buffer for source code
+: .d%          ( n -- )  push-decimal  (.) type [char] % emit  pop-base  ;
+: .usage       ( -- )    nv-length d# 100 * /nv / .d%  ;
+: nv$          ( -- $ )  nv-base nv-length  ;
+: .nv          ( -- )    nv$ type  ;
+: nv-dump      ( -- )    nv$ 1+ cdump  ;
+: nv-dump-all  ( -- )    nv-base /nv dump  ;
+: nv-evaluate  ( -- )    nv$  ['] evaluate  catch  ?dup  if  3drop  then  ;
+
+\ add a line to non-volatile buffer
+: nv  ( text ( )
+   nv-length            ( pos )
    eol parse            ( pos adr len )
+   dup 0=               ( pos adr len empty )
+   if  3drop exit  then ( pos adr len )
    bounds do            ( pos )
       i c@ over         ( pos char pos )
-      eeprom!           ( pos )
+      nv!               ( pos )
       1+                ( pos+1 )
    loop                 ( pos+len )
-   h# a over eeprom!    ( pos+len+1 )
-   1+ 0 swap eeprom!    ( )
+   h# a over nv!        ( pos+len+1 )
+   1+ 0 swap nv!        ( )
 ;
 
+\ scan backwards for a line break
+: strrnl  ( a.begin a.end -- a.match )
+   swap  do  i c@ h# a =  if  i leave  then  -1 +loop
+;
+
+\ forget last line
+: nv-undo  ( -- )
+   nv$ 2-               ( adr len )
+   dup 0< if  2drop ." no more"  exit  then  ( adr len )
+   bounds               ( adr adr )
+   strrnl               ( adr )
+   nv-base - 1+         ( pos ) \ of first char in line to remove
+   0 swap nv!
+;
+
+\ wip entire non-volatile buffer
+: nv-wipe      ( -- )    0 0 nv!  ;
+
+\ FIXME: a way to prevent execution in case of obvious bug
+\ now the only way is to reflash with nv-evaluate removed
 : app
-   eeprom-evaluate  init
+   nv-evaluate
    ." CForth" cr hex quit
 ;
 
