@@ -19,6 +19,7 @@ h# 1000 constant /pcr-port
 
 \ pin control register bits
 : +af1  h# 0000.0100 or  ;  \ mux, pin mux control, alternative 1
+: +af2  h# 0000.0200 or  ;  \ mux, pin mux control, alternative 2
 : +dse  h# 0000.0040 or  ;  \ dse, drive strength enable, high
 : +ode  h# 0000.0020 or  ;  \ ode, open drain enable, enabled
 

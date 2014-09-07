@@ -22,6 +22,7 @@ fl ../../lib/dl.fth
 fl ../../platform/arm-teensy3/watchdog.fth
 fl ../../platform/arm-teensy3/timer.fth
 fl ../../platform/arm-teensy3/pcr.fth
+fl ../../platform/arm-teensy3/i2c.fth
 fl ../../platform/arm-teensy3/gpio.fth
 fl ../../platform/arm-teensy3/nv.fth
 
@@ -49,6 +50,15 @@ fl ../../platform/arm-teensy3/nv.fth
    until
 ;
 
+\ tsl2561 luminosity sensor
+: .tsl
+   h# 39 i2c-open
+   3 80 i2c-reg! \ power up sensor
+   d# 402 ms \ nominal integration time
+   h# 8c i2c-reg@ h# 8d i2c-reg@ bwjoin . \ ADC channel 0
+   h# 8e i2c-reg@ h# 8f i2c-reg@ bwjoin . \ ADC channel 1
+   0 80 i2c-reg! \ power down sensor
+   i2c-close
 ;
 
 \ FIXME: a way to prevent execution in case of obvious bug
