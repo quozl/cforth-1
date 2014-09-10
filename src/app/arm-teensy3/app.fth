@@ -61,10 +61,22 @@ fl ../../platform/arm-teensy3/nv.fth
    i2c-close
 ;
 
-\ FIXME: a way to prevent execution in case of obvious bug
-\ now the only way is to reflash with nv-evaluate removed
+\ blink the led
+: go
+   $1 $d m!  $1 $d p!   \ mode output, drive on
+   #10 ms		\ pause
+   $0 $d p!  $0 $d m!   \ drive off, mode input
+;
+
+\ to prevent execution of non-volatile buffer, tie pin 13 to ground.
+: confirm?  ( -- flag )
+   $0 $d m!  $1 $d p!  $2 ms    \ mode input, pullup on, stabilise
+   $d p@                        \ read pin
+   $1 $d m!  $0 $d p!           \ mode output, force low
+;
+
 : app
-   nv-evaluate
+   confirm?  if  go  nv-evaluate  then
    ." CForth" cr hex quit
 ;
 
