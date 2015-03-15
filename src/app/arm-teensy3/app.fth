@@ -6,7 +6,7 @@ fl ../../lib/dl.fth
 #0 ccall: spins       { i.nspins -- }
 #1 ccall: wfi         { -- }
 #2 ccall: get-msecs   { -- n }
-#3 ccall: a!          { n i.pin -- }
+#3 ccall: a!          { i.val -- }
 #4 ccall: a@          { i.pin -- n }
 #5 ccall: p!          { i.val i.pin -- }
 #6 ccall: p@          { i.pin -- n }
