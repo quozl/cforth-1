@@ -390,7 +390,7 @@ headerless
 : dummy ;
 
 : .char    ( ip -- ip' )
-   .." '"  ta1+  dup @ emit space  na1+
+   .." [char] "  ta1+  dup @ emit space  na1+
 ;
 
 \ classify each word in a definition
