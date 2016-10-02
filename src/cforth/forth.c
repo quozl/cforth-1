@@ -64,8 +64,8 @@ const u_char nullrelmap[1] = { 0 };
   #define HIGH(a)((a) >> 16)
 #endif
 
-void udot(u_cell u, cell *up);
-void udotx(u_cell u, cell *up);
+void udot(unsigned int u, cell *up);
+void udotx(unsigned int u, cell *up);
 
 // int printing = 0;
 // Execute an array of Forth execution tokens.

@@ -276,6 +276,7 @@ cell ft_getbits(cell ops) { return -1; }
 
 cell open_com(cell portnum)		// Open COM port
 {
+	cell res;
 	res = ft_open_serial(portnum, 0x4e4c);	// Nod Ring
 	if (res)
 		return res;
