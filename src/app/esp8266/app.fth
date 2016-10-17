@@ -119,38 +119,27 @@ fl car.fth
 
 \ Replace 'quit' to make CForth auto-run some application code
 \ instead of just going interactive.
-: app  banner  hex init-i2c  showstack  quit  ;
+: app
+   banner
+   hex init-i2c
 
-alias id: \
+   get-ticks #500000 +          ( target )
+   begin
+      key?  if  drop  ." Interrupted" cr  quit  then
+      dup get-ticks - 0<
+   until                        ( target )
+   drop                         ( )
 
-fl ${CBP}/lib/fb.fth
-fl ${CBP}/lib/font5x7.fth
-fl ${CBP}/lib/ssd1306.fth
-: init-wemos-oled  ( -- )
-   1 2 i2c-setup
-   ssd-init
+   " init.fth" 2dup  ['] open-fid catch  if
+      2drop 2drop
+   else
+      close-fid included
+   then
+
+   quit
 ;
-: test-wemos-oled  ( -- )
-   init-wemos-oled
-   #20 0  do  i (u.)  fb-type "  Hello" fb-type  fb-cr  loop
-;
 
-\ Open Firmware stuff; omit if you don't need it
-fl ${CBP}/ofw/loadofw.fth      \ Mostly platform-independent
-fl ofw-rootnode.fth \ ESP8266-specific
-
-fl sdspi.fth
-
--1 value hspi-cs   \ -1 to use hardware CS mode, 8 to use pin8 with software
-
-' spi-transfer to spi-out-in
-' spi-bits@    to spi-bits-in
-
-: sd-init  ( -- )
-   0 true #100000 hspi-cs spi-open
-   ['] spi-transfer to spi-out-in
-   ['] spi-bits@    to spi-bits-in
-   sd-card-init
-;
+fl fts.fth
+fl telnetd.fth
 
 " app.dic" save
