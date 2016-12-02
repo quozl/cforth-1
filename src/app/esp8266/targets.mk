@@ -72,20 +72,20 @@ FORTH_OBJS = tembed.o textend.o
 DICTIONARY=ROM
 DICTSIZE=0x4000
 
-app.o: date.o
+app.o: tdate.o
 	@echo Linking $@ ... 
-	@$(TLD)  -o $@  -r  $(PLAT_OBJS) $(FORTH_OBJS) date.o
+	@$(TLD)  -o $@  -r  $(PLAT_OBJS) $(FORTH_OBJS) tdate.o
 
 # This rule builds a date stamp object that you can include in the image
 # if you wish.
 
-date.o: $(PLAT_OBJS) $(FORTH_OBJS)
+tdate.o: $(PLAT_OBJS) $(FORTH_OBJS)
 	@(echo "`git rev-parse --verify --short HEAD``if git diff-index --exit-code --name-only HEAD >/dev/null; then echo '-dirty'; fi`" || echo UNKNOWN) >version
-	@echo 'const char version[] = "'`cat version`'";' >date.c
-	@echo 'const char build_date[] = "'`date --utc +%F\ %R`'";' >>date.c
-	@cat date.c
+	@echo 'const char version[] = "'`cat version`'";' >tdate.c
+	@echo 'const char build_date[] = "'`date --utc +%F\ %R`'";' >>tdate.c
+	@cat tdate.c
 	@echo TCC $@
-	@$(TCC) -c date.c -o $@
+	@$(TCC) -c tdate.c -o $@
 
 EXTRA_CLEAN += *.elf *.dump *.nm *.img date.c $(FORTH_OBJS) $(PLAT_OBJS)
 
@@ -96,12 +96,39 @@ include $(SRC)/cforth/embed/targets.mk
 
 .PHONY: nodemcu-fw
 
+NODEMCU_REPO ?= https://github.com/nodemcu/nodemcu-firmware.git
+NODEMCU_COMMIT ?= 7b83bbb
+$(NODEMCU_PATH):
+	(cd $(NODEMCU_PARENT_PATH) \
+	&& git clone $(NODEMCU_REPO) \
+	&& cd $(abspath $(NODEMCU_PATH)) \
+	&& git branch cforth $(NODEMCU_COMMIT) \
+	&& git checkout cforth \
+	&& git apply $(abspath $(APPPATH))/*.patch \
+	)
+
+$(NODEMCU_PATH)/sdk: $(NODEMCU_PATH)
+	cd $(NODEMCU_PATH) && make --no-print-directory sdk_patched
+
+$(PLAT_OBJS): $(NODEMCU_PATH)/sdk
+
 nodemcu-fw: app.o
-	(cd $(NODEMCU_PATH) && sh makeit)
+	(cd $(NODEMCU_PATH) && PATH=${PATH}:$(XTGCCPATH) make --no-print-directory)
+
+LOADCMD=tools/esptool.py --port $(COMPORT) -b 115200 write_flash -fm=dio -fs=32m 0x00000 bin/0x00000.bin 0x10000 bin/0x10000.bin
+
+download: nodemcu-fw
+	(cd $(NODEMCU_PATH) && $(LOADCMD))
+
+
+# wmbdownload automatically disconnects the terminal emulator while downloading
+# It is used on Windows host systems with TeraTerm as the terminal emulator.
+# It further requires the "AutoHotkey" program, which is a scripting language
+# that is good at sending events to Windows programs.
 
 SCRIPTPATH=/c/Users/wmb/Desktop/
 AHKPATH=/c/Program\ Files/AutoHotKey/
-download: nodemcu-fw
+wmbdownload: nodemcu-fw
 	$(AHKPATH)AutoHotKey $(SCRIPTPATH)disconn_teraterm.ahk $(COMPORT)
-	(cd $(NODEMCU_PATH) && sh loadit $(COMPORT))
+	(cd $(NODEMCU_PATH) && $(LOADCMD))
 	$(AHKPATH)AutoHotKey $(SCRIPTPATH)connect_teraterm.ahk $(COMPORT)

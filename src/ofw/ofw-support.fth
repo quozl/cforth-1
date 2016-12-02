@@ -1,6 +1,12 @@
 \ Mostly-trivial definitions for compatibility with the OFW Forth system
+
+\needs purpose: alias purpose: \
+\needs copyright: alias copyright: \
+
 : init ;
 : 5drop  ( x x x x x -- )  2drop 3drop  ;
+\needs 3dup  : 3dup  ( -- )  2 pick 2 pick 2 pick  ;
+
 
 : (confirmed?)  ( adr len -- char )
    type  ."  [y/n]? "  key dup emit cr  upc
@@ -76,13 +82,15 @@ alias do-is (to)
 : wpoke  ( w adr -- okay? )  w! true  ;
 : lpoke  ( l adr -- okay? )  l! true  ;
 
-: wbflip  ( w -- w )  wbsplit swap bwjoin  ;
-: lwflip  ( l -- l )  lwsplit swap wljoin  ;
-\needs lbflip : lbflip  ( l -- l )  lbsplit swap 2swap swap bljoin  ;
+\needs lex fl ../lib/lex.fth
 
-: lbflips  ( adr len -- )   bounds  ?do  i l@ lbflip i l!  /l +loop  ;
-: wbflips  ( adr len -- )   bounds  ?do  i w@ wbflip i w!  /w +loop  ;
-: lwflips  ( adr len -- )   bounds  ?do  i l@ lwflip i l!  /l +loop  ;
+\ : wbflip  ( w -- w )  wbsplit swap bwjoin  ;
+\ : lwflip  ( l -- l )  lwsplit swap wljoin  ;
+\ \needs lbflip : lbflip  ( l -- l )  lbsplit swap 2swap swap bljoin  ;
+
+\ : lbflips  ( adr len -- )   bounds  ?do  i l@ lbflip i l!  /l +loop  ;
+\ : wbflips  ( adr len -- )   bounds  ?do  i w@ wbflip i w!  /w +loop  ;
+\ : lwflips  ( adr len -- )   bounds  ?do  i l@ lwflip i l!  /l +loop  ;
 
 #260 constant /stringbuf
 /stringbuf 2* buffer: stringbuf
@@ -190,12 +198,12 @@ alias link> ta1+
 alias transient noop
 alias resident noop
 0 value my-self
-0 constant struct
-: field  ( offset size )  create  over , +  does>  ( adr -- adr' )  @ +  ;
+\needs struct fl ../lib/struct.fth
 \needs $=  : $=  ( $1 $2 -- )  compare 0=  ;
 alias headerless? false
 alias ascii [char]
 alias partial-headers noop
+alias external headers
 create cforth
 \needs standalone?  false value standalone?
 alias eval evaluate
@@ -208,32 +216,16 @@ defer minimum-search-order
 ;
 : round-down  ( adr granularity -- adr' )  1- invert and  ;
 
-\ From openfirmare/forth/kernel/endian.fth
-\needs le-w@  : le-w@   ( a -- w )   dup    c@ swap ca1+    c@ bwjoin  ;
-\needs be-w@  : be-w@   ( a -- w )   dup ca1+    c@ swap    c@ bwjoin  ;
+fl ${BP}/forth/kernel/splits.fth
+fl ${BP}/forth/lib/split.fth
+fl ${BP}/forth/kernel/endian.fth
+32\ alias unaligned-! unaligned-l!
+64\ alias unaligned-! !
+64\ alias rx@ @
+64\ alias rx! !
+64\ alias x, ,
+64\ alias xa1+ cell+
 
-\needs le-l@  : le-l@   ( a -- l )   dup le-w@ swap wa1+ le-w@ wljoin  ;
-\needs be-l@  : be-l@   ( a -- l )   dup wa1+ be-w@ swap be-w@ wljoin  ;
-
-\needs le-l!  : le-l!   ( l a -- )   >r lwsplit r@ wa1+ le-w! r> le-w!  ;
-\needs be-l!  : be-l!   ( l a -- )   >r lwsplit r@ be-w! r> wa1+ be-w!  ;
-
-\needs le-l,  : le-l,   ( l -- )     here /l allot le-l!  ;
-\needs be-l,  : be-l,   ( l -- )     here /l allot be-l!  ;
-
-alias unaligned-w! le-w!
-alias unaligned-l! le-l!
-alias unaligned-! unaligned-l!
-
-8 constant /x
-
-: be-x@  ( adr -- d )  dup la1+ be-l@  swap be-l@  ;
-: be-x!  ( d adr -- )  tuck be-l!  la1+ be-l!  ;
-: be-x,   ( x -- )  here /x allot be-x!  ;
-
-alias be-n@ be-l@
-alias be-n! be-l!
-alias be-n, be-l,
 : -leading  ( adr len -- adr' len' )  
    begin  dup  while
       over c@ bl  <>  if  exit  then

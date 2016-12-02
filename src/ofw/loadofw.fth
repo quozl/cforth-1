@@ -2,6 +2,8 @@
 \ This is CForth-specific but it is supposed to be independent of
 \ any particular hardware platform.
 
+fl ${CBP}/ofw/ofw-support.fth
+
 create ext2fs-support
 create nfts-support
 create omit-fb-support
@@ -15,7 +17,6 @@ fl ${BP}/forth/lib/linklist.fth
 fl ${BP}/forth/lib/parses1.fth
 fl ${BP}/forth/lib/cirstack.fth
 
-fl ${CBP}/ofw/ofw-support.fth
 fl ${CBP}/ofw/nullfb.fth
 
 fl $(BP)/forth/lib/fileed.fth
@@ -28,7 +29,6 @@ fl ${CBP}/ofw/core/deblock.fth
 fl ${BP}/forth/lib/seechain.fth
 
 fl ../lib/stringar.fth
-fl ../lib/lex.fth
 
 \ : fl parse-word 2dup type space included ;
 \ alias fload fl

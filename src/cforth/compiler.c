@@ -124,6 +124,8 @@ header(char *adr, cell len, cell *up)
     place_name(canonstr, len, *threadp, up);
 
  /* Link into vocabulary search list and remember lfa for hide/reveal */
+//    printf("%p %x %x %x %x\n", threadp, *threadp, CT_FROM_XT((xt_t)V(DP), up), V(RAMCT), V(RAMTOKENS));
+
     tokstore(CT_FROM_XT((xt_t)V(DP), up), threadp);
 }
 
