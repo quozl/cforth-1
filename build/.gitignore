@@ -3,4 +3,6 @@ makeccalls
 gcalls.fth
 glops.h
 makegcalls
+tdate.c
 *.d
+tccalls.fth

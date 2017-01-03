@@ -5,11 +5,33 @@ C Forth is a Forth implementation by Mitch Bradley, optimised for embedded use i
 
 The Teensy 3.1 is a Freescale MK20DX256 ARM Cortex-M4 with a Nuvoton MINI54 ARM Cortex-M0 management controller.  Paul Stoffregen maintains a build environment, which can be used with or without an IDE.  See https://github.com/PaulStoffregen/cores.git
 
-This repository you are looking at is an initial build of C Forth, without removing unnecessary features, which used 51 kB out of the available 256 kB FLASH.  It requires UART0 at 115200 baud.
-
 See also https://github.com/lowfatcomputing/mecrisp-stellaris for Mecrisp-Stellaris, a port of Mecrisp to the ARM Cortex M architecture.
 
-Build Dependencies on Ubuntu 16.04 x86_64
------------------------------------------
+Install Dependencies
+--------------------
 
-`apt install lib32gcc-5-dev libc6-dev-i386`
+* install dependencies,
+
+`sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi git`
+
+* if you are using a 64-bit build system (where `uname -m` returns x86_64), install further dependencies,
+
+`sudo apt install lib32gcc-5-dev libc6-dev-i386`
+
+Building
+--------
+
+```
+cd build/arm-teensy3
+make
+```
+
+Loading
+-------
+
+```
+make burn
+```
+
+See also
+https://quozl.linux.org.au/cforth-on-teensy/

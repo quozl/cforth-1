@@ -4,6 +4,7 @@ main()
 {
     void *up;
 
+    init_uart();
     init_io();   // Perform platform-specific initialization
 
     up = (void *)init_forth();

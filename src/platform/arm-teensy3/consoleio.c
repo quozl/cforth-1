@@ -60,7 +60,7 @@ int console_usb()
   return use_usb;
 }
 
-void tx(char c)
+void raw_putchar(char c)
 {
   if (use_uart) {
     /* pause until transmit data register empty */
@@ -72,13 +72,6 @@ void tx(char c)
     usb_serial_putchar(c);
     sent_usb++;
   }
-}
-
-int putchar(int c)
-{
-  if (c == '\n')
-    tx('\r');
-  tx(c);
 }
 
 #if 0
@@ -131,8 +124,8 @@ const char hexen[] = "0123456789ABCDEF";
 
 void put8(uint32_t c)
 {
-  putchar(hexen[(c >> 4) & 0xf]);
-  putchar(hexen[c & 0xf]);
+  emit(hexen[(c >> 4) & 0xf]);
+  emit(hexen[c & 0xf]);
 }
 
 void put32(uint32_t n)
@@ -146,7 +139,7 @@ void put32(uint32_t n)
 void putline(char *str)
 {
   while (*str)
-    putchar((int)*str++);
+    emit((int)*str++);
 }
 #endif
 
@@ -184,7 +177,7 @@ int getkey()
   }
 }
 
-void init_io(int argc, char **argv, cell *up)
+void init_uart()
 {
   // turn on clock
   SIM_SCGC4 |= SIM_SCGC4_UART0;
@@ -238,23 +231,6 @@ int spins(int i)
   while(i--)
     asm("");  // The asm("") prevents optimize-to-nothing
 }
-
-void pfprint_input_stack(void) {}
-void pfmarkinput(void *fp, cell *up) {}
-
-cell pfflush(cell f, cell *up)
-{
-    return -1;
-}
-
-cell pfsize(cell f, u_cell *high, u_cell *low, cell *up)
-{
-    *high = 0;
-    *low = 0;
-    return SIZEFAIL;
-}
-
-cell isstandalone() { return 1; }
 
 #include <stdio.h>
 
