@@ -18,7 +18,7 @@ CROSS ?= $(XTGCCPATH)xtensa-esp32-elf-
 # ESP32 SDK
 IDF_PATH ?= $(TOPDIR)/../esp-idf
 
-COMPORT ?= COM27
+COMPORT ?= /dev/ttyUSB0
 
 include $(TOPDIR)/src/app/esp32/targets.mk
 
