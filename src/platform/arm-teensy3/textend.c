@@ -40,7 +40,7 @@ cell ((* const ccalls[])()) = {
     (cell (*)())spins,            // Entry # 0
     (cell (*)())wfi,              // Entry # 1
     (cell (*)())get_msecs,        // Entry # 2
-    (cell (*)())analogWriteDAC0,  // Entry # 3
+    (cell (*)())analogWrite,	  // Entry # 3
     (cell (*)())analogRead,       // Entry # 4
     (cell (*)())digitalWrite,     // Entry # 5
     (cell (*)())digitalRead,      // Entry # 6
