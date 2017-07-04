@@ -9,7 +9,7 @@
 cell get_msecs();
 cell wfi();
 cell spins();
-cell analogWriteDAC0();
+cell analogWrite();
 cell analogRead();
 cell digitalWrite();
 cell digitalRead();
