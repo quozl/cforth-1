@@ -3,10 +3,6 @@
 #include "core_pins.h"
 #include "usb_serial.h"
 
-#define TIB_SIZE	255
-
-static unsigned char tib[TIB_SIZE + 1];
-static unsigned char *tib_ptr = tib, *first_chr_ptr = tib;
 
 char * ultoa(unsigned long val, char *buf, int radix)
 {
@@ -83,75 +79,24 @@ int kbhit()
   return 0;
 }
 
-static int char_push(unsigned char ch)
-{
-     // Never fail to push, but warn when it's the last push possible.
-     *(tib_ptr++) = ch;
-     if ((tib_ptr - tib) == TIB_SIZE)
-	  return 1;
-     else
-	  return 0;
-}
-
-static unsigned char char_pop(void)
-{
-     unsigned char ch = (char)0;
-     
-     // If there's a saved character in the TIB, return it.
-     if (first_chr_ptr < tib_ptr)
-	  ch = *(first_chr_ptr++);
-     // If we have read all of the characters out of the buffer, we can now reset both ptrs.
-     if (first_chr_ptr == tib_ptr)
-	  first_chr_ptr = tib_ptr = tib;
-     return ch;
-}
-
-static int char_peek(void)
-{
-     if (tib_ptr == tib)
-	  return 0;
-     return 1;
-}
-
-static unsigned char char_get(void)
-{
-     unsigned char c;
-	
-     if (sent_usb) {
-	  usb_serial_flush_output();
-	  sent_usb = 0;
-     }
-     if (UART0_RCFIFO > 0) {
-	  c = UART0_D;
-	  return c;
-     }
-     c = usb_serial_getchar();
-     if (c != -1) {
-	  seen_usb++;
-	  return c;
-     }
-}
-
 int getkey()
 {
-     unsigned char ch;
-
-     // If there's a buffered character, return it immediately.
-     if (char_peek())
-	  return char_pop();
-     // Wait for a character to be available.
-     while (!kbhit())
-	  ;
-     // Always push the character because we don't know how many more there will be in the buffered sequence.
-     ch = char_get();
-     char_push(ch);
-     while (kbhit()) {
-	  // If our buffer fills up, char_push() returns true so we know to immediately stop buffering.
-	  ch = char_get();
-	  if (char_push(ch))
-	       return char_pop();
-     }
-     return char_pop();
+  int c;
+  if (sent_usb) {
+    usb_serial_flush_output();
+    sent_usb = 0;
+  }
+  while (1) {
+    if (UART0_RCFIFO > 0) {
+      c = UART0_D;
+      return c;
+    }
+    c = usb_serial_getchar();
+    if (c != -1) {
+      seen_usb++;
+      return c;
+    }
+  }
 }
 
 void init_io(int argc, char **argv, cell *up)
