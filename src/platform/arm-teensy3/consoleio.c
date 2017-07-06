@@ -143,7 +143,7 @@ void yield(void)
   asm("wfi"); // __WFI();
 }
 
-volatile uint32_t systick_millis_count = 0;
+extern volatile uint32_t systick_millis_count;
 int get_msecs(void)
 {
   return systick_millis_count;
