@@ -129,8 +129,6 @@ void init_io(int argc, char **argv, cell *up)
 
   seen_usb = 0;
   sent_usb = 0;
-  usb_init();
-  analog_init();
 }
 
 void wfi(void)
