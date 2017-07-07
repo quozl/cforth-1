@@ -8,3 +8,8 @@ The Teensy 3.1 is a Freescale MK20DX256 ARM Cortex-M4 with a Nuvoton MINI54 ARM 
 This repository you are looking at is an initial build of C Forth, without removing unnecessary features, which used 51 kB out of the available 256 kB FLASH.  It requires UART0 at 115200 baud.
 
 See also https://github.com/lowfatcomputing/mecrisp-stellaris for Mecrisp-Stellaris, a port of Mecrisp to the ARM Cortex M architecture.
+
+Build Dependencies on Ubuntu 16.04 x86_64
+-----------------------------------------
+
+`apt install lib32gcc-5-dev libc6-dev-i386`
