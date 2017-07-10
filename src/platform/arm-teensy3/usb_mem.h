@@ -44,7 +44,7 @@ typedef struct usb_packet_struct {
 extern "C" {
 #endif
 
-usb_packet_t * usb_malloc(void);
+usb_packet_t * usb_malloc(int);
 void usb_free(usb_packet_t *p);
 
 #ifdef __cplusplus

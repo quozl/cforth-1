@@ -3,7 +3,6 @@
 fl ../../lib/misc.fth
 fl ../../lib/dl.fth
 
-fl ../../platform/arm-teensy3/watchdog.fth
 fl ../../platform/arm-teensy3/timer.fth
 fl ../../platform/arm-teensy3/pcr.fth
 fl ../../platform/arm-teensy3/i2c.fth

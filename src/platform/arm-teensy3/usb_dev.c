@@ -235,7 +235,7 @@ static void usb_setup(void)
 #endif
 			if (epconf & USB_ENDPT_EPRXEN) {
 				usb_packet_t *p;
-				p = usb_malloc();
+				p = usb_malloc(1);
 				if (p) {
 					table[index(i, RX, EVEN)].addr = p->buf;
 					table[index(i, RX, EVEN)].desc = BDT_DESC(64, 0);
@@ -243,7 +243,7 @@ static void usb_setup(void)
 					table[index(i, RX, EVEN)].desc = 0;
 					usb_rx_memory_needed++;
 				}
-				p = usb_malloc();
+				p = usb_malloc(1);
 				if (p) {
 					table[index(i, RX, ODD)].addr = p->buf;
 					table[index(i, RX, ODD)].desc = BDT_DESC(64, 1);
@@ -1008,7 +1008,7 @@ void usb_isr(void)
 					// packets, so a flood of incoming data on 1 endpoint
 					// doesn't starve the others if the user isn't reading
 					// it regularly
-					packet = usb_malloc();
+					packet = usb_malloc(1);
 					if (packet) {
 						b->addr = packet->buf;
 						b->desc = BDT_DESC(64,
