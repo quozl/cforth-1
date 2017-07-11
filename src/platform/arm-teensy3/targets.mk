@@ -71,7 +71,7 @@ burn: app.hex
 # if you wish.
 
 tdate.o: $(PLAT_OBJS) $(FORTH_OBJS)
-	@(echo "`git rev-parse --verify --short HEAD`" || echo UNKNOWN) >version
+	@(echo "`git rev-parse --verify --short HEAD``if git diff-index --exit-code --name-only HEAD >/dev/null; then echo '-dirty'; fi`" || echo UNKNOWN) >version
 	@echo 'const char version[] = "'`cat version`'";' >tdate.c
 	@echo 'const char build_date[] = "'`date --utc +%F\ %R`'";' >>tdate.c
 	@cat tdate.c
