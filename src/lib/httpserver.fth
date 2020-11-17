@@ -117,9 +117,8 @@ defer server-init  ' noop to server-init
          reply{ space }reply
          2drop                          ( )
       else                              ( url$ )
-#rcv 1+ to #rcv
-   ." URL: " 2dup type space #rcv .d  cr         ( url$ )
-\         ." URL: " 2dup type cr         ( url$ )
+         #rcv 1+ to #rcv
+         ." URL: " 2dup type space #rcv .d  cr  ( url$ )
          1 /string                      ( url$' )
          '?' left-parse-string          ( arg$ filename$ )
          2swap to url-args-len to url-args-adr  ( filename$ )

@@ -218,8 +218,8 @@ cell ((* const ccalls[])()) = {
         C(mcpwm_init)            //c mcpwm_init  { a.conf i.timer# i.pwm# -- e.err? }
         C(mcpwm_set_frequency)   //c mcpwm_set_frequency  { i.freq i.timer# i.pwm# -- e.err? }
         C(mcpwm_set_duty_in_us)  //c mcpwm_set_duty_in_us  { i.duty i.op# i.timer# i.pwm# -- e.err? }
-C(mcpwm_set_duty_type)           //c mcpwm_set_duty_type { i.duty# i.op# i.timer# i.pwm# -- i.err? }
-C(mcpwm_get_frequency)           //c mcpwm_get_frequency { i.timer# i.pwm# -- i.freq }
+        C(mcpwm_set_duty_type)   //c mcpwm_set_duty_type { i.duty# i.op# i.timer# i.pwm# -- i.err? }
+        C(mcpwm_get_frequency)   //c mcpwm_get_frequency { i.timer# i.pwm# -- i.freq }
         C(mcpwm_set_signal_high) //c mcpwm_set_signal_high { i.op# i.timer# i.pwm# -- i.err? }
         C(mcpwm_set_signal_low)  //c mcpwm_set_signal_low { i.op# i.timer# i.pwm# -- i.err? }
         C(mcpwm_start)           //c mcpwm_start { i.timer# i.pwm# -- i.err? }
