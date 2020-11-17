@@ -277,8 +277,8 @@ fl i2clcd.fth
 ;
 ' periodic to handle-timeout
 
-:noname  " user's Network" ;  to wifi-sta-ssid
-:noname  " remydannee"   ;  to wifi-sta-password
+:noname  " YourWiFiSSID" ;  to wifi-sta-ssid
+:noname  " YourWiFiPassword"   ;  to wifi-sta-password
 
 : init-sensors  ( -- )
    ['] init-vl6180x catch  if  ." VL6180 init failed" cr  then
