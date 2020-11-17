@@ -20,7 +20,7 @@
       2dup " /favicon.ico" compare 0=  if   ( url$ )
          2drop                          ( )
       else                              ( url$ )
-flatso         ." URL: " type cr              ( )
+         ." URL: " type cr              ( )
          hdr but1 but2
       then
    else
