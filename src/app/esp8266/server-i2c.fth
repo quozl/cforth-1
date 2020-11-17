@@ -25,7 +25,6 @@
    hdr
    distance
 ;
-rats
 : rcv   ( adr len handle -- )
    to client                            ( adr len )
    5 client tcp-bufcnt!
